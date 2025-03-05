@@ -1,0 +1,164 @@
+[gd_scene load_steps=2 format=3 uid="uid://kmtumppth65d"]
+
+[ext_resource type="Script" uid="uid://cxrqw2kmtcgvq" path="res://addons/bulk-model-manager/bulk_set_mats_dock.gd" id="1_vkejt"]
+
+[node name="Bulk Set Materials" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_vkejt")
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+
+[node name="Header" type="VBoxContainer" parent="VBoxContainer2"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="VBoxContainer2/Header"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+text = "Dragon1Freak's Bulk Material Setter"
+autowrap_mode = 3
+justification_flags = 162
+
+[node name="Label" type="Label" parent="VBoxContainer2/Header"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "Select one or more 3D model files in the FileSystem dock and then set the materials you want to use below.
+
+If you select a directory or your selection contains files that are not 3D models they will be safely ignored."
+autowrap_mode = 3
+justification_flags = 162
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer2/Header"]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer2"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Content" type="VBoxContainer" parent="VBoxContainer2/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="Label" type="Label" parent="VBoxContainer2/ScrollContainer/Content"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"HeaderSmall"
+text = "Selected File(s):"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer2/ScrollContainer/Content"]
+layout_mode = 2
+
+[node name="SelectedFilesPanel" type="Panel" parent="VBoxContainer2/ScrollContainer/Content/HBoxContainer2"]
+clip_contents = true
+custom_minimum_size = Vector2(0, 26.615)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SelectedFileCount" type="Label" parent="VBoxContainer2/ScrollContainer/Content/HBoxContainer2/SelectedFilesPanel"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -11.5
+offset_right = 1152.0
+offset_bottom = 11.5
+grow_vertical = 2
+text = "plugin.cfg"
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="Button" type="Button" parent="VBoxContainer2/ScrollContainer/Content/HBoxContainer2"]
+visible = false
+layout_mode = 2
+text = "Extract Materials"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer2/ScrollContainer/Content"]
+layout_mode = 2
+
+[node name="ExtractMaterialsCheckbox" type="CheckBox" parent="VBoxContainer2/ScrollContainer/Content/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Extract Materials?"
+
+[node name="ExtractMaterialPathRow" type="HBoxContainer" parent="VBoxContainer2/ScrollContainer/Content/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="MaterialPathPanel" type="Panel" parent="VBoxContainer2/ScrollContainer/Content/VBoxContainer/ExtractMaterialPathRow"]
+clip_contents = true
+custom_minimum_size = Vector2(0, 26.615)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MaterialExportPath" type="Label" parent="VBoxContainer2/ScrollContainer/Content/VBoxContainer/ExtractMaterialPathRow/MaterialPathPanel"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -11.5
+offset_right = 1152.0
+offset_bottom = 11.5
+grow_vertical = 2
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="SetMaterialPathButton" type="Button" parent="VBoxContainer2/ScrollContainer/Content/VBoxContainer/ExtractMaterialPathRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Set Materials Path"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer2/ScrollContainer/Content"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer2/ScrollContainer/Content/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"HeaderSmall"
+text = "Selected Materials:"
+
+[node name="SelectMaterialsButton" type="Button" parent="VBoxContainer2/ScrollContainer/Content/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Select"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer2/ScrollContainer/Content"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MaterialLabels" type="VBoxContainer" parent="VBoxContainer2/ScrollContainer/Content/ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="NoMatsLabel" type="Label" parent="VBoxContainer2/ScrollContainer/Content/ScrollContainer/MaterialLabels"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "No materials selected"
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer2/ScrollContainer/Content"]
+layout_mode = 2
+
+[node name="SetMatsButton" type="Button" parent="VBoxContainer2"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+disabled = true
+text = "Set Materials"
