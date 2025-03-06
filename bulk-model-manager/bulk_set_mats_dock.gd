@@ -7,50 +7,76 @@ const BSM_MATERIAL_LABEL = preload("res://addons/bulk-model-manager/bsm_material
 var file_name_regex : RegEx
 var file_dialog : EditorFileDialog
 var material_export_path_dialog : EditorFileDialog
+var inherited_scene_path_dialog : EditorFileDialog
 var material_export_path : String
+var inherited_scene_path : String
 var selected_materials : PackedStringArray = []
 var editor_parent : EditorPlugin
 
 @onready var set_mats_button: Button = %SetMatsButton
-@onready var selected_file_count: Label = %SelectedFileCount
+@onready var selected_file_count: TextEdit = %SelectedFileCount
+
 @onready var select_materials_button: Button = %SelectMaterialsButton
 @onready var material_labels: VBoxContainer = %MaterialLabels
 @onready var no_mats_label: Label = %NoMatsLabel
+
 @onready var tab_parent: TabContainer = self.get_parent()
+
 @onready var extract_materials_checkbox: CheckBox = %ExtractMaterialsCheckbox
 @onready var extract_material_path_row: VBoxContainer = %ExtractMaterialPathRow
-@onready var material_export_path_label: Label = %MaterialExportPath
+@onready var material_export_path_label: TextEdit = %MaterialExportPath
 @onready var set_material_path_button: Button = %SetMaterialPathButton
+@onready var clear_materials_path_button: Button = %ClearMaterialsPathButton
+
+@onready var create_scenes_checkbox: CheckBox = %CreateScenesCheckbox
+@onready var inherited_scene_row: VBoxContainer = %InheritedSceneRow
+@onready var inherited_scene_path_label: TextEdit = %InheritedScenePath
+@onready var set_inherited_scene_path: Button = %SetInheritedScenePath
+@onready var clear_inherited_scene_path: Button = %ClearInheritedScenePath
 
 
 func _ready() -> void:
+	# Buttons ----------------------
 	set_mats_button.pressed.connect(_on_set_mats_pressed)
 	select_materials_button.pressed.connect(func(): file_dialog.show())
-	extract_materials_checkbox.toggled.connect(_on_extract_toggled)
 	_on_extract_toggled(false)
+	extract_materials_checkbox.toggled.connect(_on_extract_toggled)
 	set_material_path_button.pressed.connect(func(): material_export_path_dialog.show())
+	clear_materials_path_button.pressed.connect(func(): _mat_export_path_selected(""))
+	_on_inherited_scene_toggled(false)
+	create_scenes_checkbox.toggled.connect(_on_inherited_scene_toggled)
+	set_inherited_scene_path.pressed.connect(func(): inherited_scene_path_dialog.show())
+	clear_inherited_scene_path.pressed.connect(func(): _inherited_scene_path_selected(""))
 	_on_list_change()
 	
 	file_name_regex = RegEx.new()
 	file_name_regex.compile("/([^/.]+.\\w+)$")
 	
+	# Dialogs -----------------------
 	file_dialog = EditorFileDialog.new()
-	_set_dialog_settngs(file_dialog)
+	_set_dialog_settings(file_dialog)
 	file_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILES
 	file_dialog.add_filter("*.tres,*.res", "Resources")
-	file_dialog.files_selected.connect(_file_selected)
+	file_dialog.files_selected.connect(_on_material_selected)
 	EditorInterface.get_base_control().add_child(file_dialog)
 	
 	material_export_path_dialog = EditorFileDialog.new()
-	_set_dialog_settngs(material_export_path_dialog)
+	_set_dialog_settings(material_export_path_dialog)
 	material_export_path_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_DIR
 	material_export_path_dialog.dir_selected.connect(_mat_export_path_selected)
 	EditorInterface.get_base_control().add_child(material_export_path_dialog)
+	
+	inherited_scene_path_dialog = EditorFileDialog.new()
+	_set_dialog_settings(inherited_scene_path_dialog)
+	inherited_scene_path_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_DIR
+	inherited_scene_path_dialog.dir_selected.connect(_inherited_scene_path_selected)
+	EditorInterface.get_base_control().add_child(inherited_scene_path_dialog)
 
 
-func _set_dialog_settngs(dialog: EditorFileDialog) -> void:
+func _set_dialog_settings(dialog: EditorFileDialog) -> void:
 	dialog.initial_position = Window.WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN
 	dialog.size = Vector2(1024, 576)
+
 
 func _process(delta: float) -> void:
 	if file_name_regex == null:
@@ -80,8 +106,26 @@ func _on_set_mats_pressed() -> void:
 	})
 
 
-func _file_selected(paths):
-	selected_materials = paths
+func _check_apply_disabled() -> void:
+	var is_disabled : bool = false
+	if selected_materials.size() == 0 and !extract_materials_checkbox.button_pressed:
+		set_mats_button.disabled = true
+		set_mats_button.tooltip_text = "Select one or more materials"
+	elif extract_materials_checkbox.button_pressed and !material_export_path:
+		set_mats_button.disabled = true
+		set_mats_button.tooltip_text = "Set a material extract path"
+	elif create_scenes_checkbox.button_pressed and !inherited_scene_path:
+		set_mats_button.disabled = true
+		set_mats_button.tooltip_text = "Set a path for inherited scene creation"
+	else:
+		set_mats_button.disabled = false
+		set_mats_button.tooltip_text = ""
+
+
+# Material Selection -----------------------------------
+func _on_material_selected(paths):
+	var new_materials = Array(paths).filter(func(path): return !selected_materials.has(path))
+	selected_materials.append_array(PackedStringArray(new_materials))
 	_update_material_labels()
 
 
@@ -114,16 +158,7 @@ func _on_list_change() -> void:
 	_check_apply_disabled()
 
 
-func _check_apply_disabled() -> void:
-	var is_disabled : bool = false
-	if selected_materials.size() == 0 and !extract_materials_checkbox.button_pressed:
-		set_mats_button.disabled = true
-	elif extract_materials_checkbox.button_pressed and !material_export_path:
-		set_mats_button.disabled = true
-	else:
-		set_mats_button.disabled = false
-
-
+# Material Exctract ------------------------------------
 func _on_extract_toggled(value: bool) -> void:
 	extract_material_path_row.visible = value
 	_check_apply_disabled()
@@ -132,4 +167,15 @@ func _on_extract_toggled(value: bool) -> void:
 func _mat_export_path_selected(path) -> void:
 	material_export_path_label.text = path
 	material_export_path = path
+	_check_apply_disabled()
+
+# Inherited Scene --------------------------------------
+func _inherited_scene_path_selected(path) -> void:
+	inherited_scene_path_label.text = path
+	inherited_scene_path = path
+	_check_apply_disabled()
+
+
+func _on_inherited_scene_toggled(value: bool) -> void:
+	inherited_scene_row.visible = value
 	_check_apply_disabled()

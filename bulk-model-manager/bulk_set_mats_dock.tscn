@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cxrqw2kmtcgvq" path="res://addons/bulk-model-manager/bulk_set_mats_dock.gd" id="1_vkejt"]
 
-[node name="Bulk Set Materials" type="Control"]
+[node name="BMM" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -18,7 +18,6 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 8
 
 [node name="Header" type="VBoxContainer" parent="VBoxContainer2"]
 layout_mode = 2
@@ -43,6 +42,7 @@ justification_flags = 162
 
 [node name="HSeparator" type="HSeparator" parent="VBoxContainer2/Header"]
 layout_mode = 2
+theme_override_constants/separation = 8
 
 [node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer2"]
 layout_mode = 2
@@ -61,42 +61,95 @@ size_flags_horizontal = 3
 theme_type_variation = &"HeaderSmall"
 text = "Selected File(s):"
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer2/ScrollContainer/Content"]
-layout_mode = 2
-
-[node name="SelectedFilesPanel" type="Panel" parent="VBoxContainer2/ScrollContainer/Content/HBoxContainer2"]
-clip_contents = true
-custom_minimum_size = Vector2(0, 48)
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer2/ScrollContainer/Content/HBoxContainer2/SelectedFilesPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
-
-[node name="SelectedFileCount" type="Label" parent="VBoxContainer2/ScrollContainer/Content/HBoxContainer2/SelectedFilesPanel/MarginContainer"]
+[node name="SelectedFileCount" type="TextEdit" parent="VBoxContainer2/ScrollContainer/Content"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+mouse_filter = 1
+mouse_default_cursor_shape = 0
+theme_override_colors/font_readonly_color = Color(0.875, 0.875, 0.875, 1)
 text = "plugin.cfg"
+editable = false
+context_menu_enabled = false
+emoji_menu_enabled = false
+shortcut_keys_enabled = false
+selecting_enabled = false
+deselect_on_focus_loss_enabled = false
+drag_and_drop_selection_enabled = false
+virtual_keyboard_enabled = false
+middle_mouse_paste_enabled = false
+empty_selection_clipboard_enabled = false
+scroll_fit_content_height = true
+
+[node name="InheritedSceneSection" type="VBoxContainer" parent="VBoxContainer2/ScrollContainer/Content"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Label" type="Label" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection"]
+layout_mode = 2
+theme_type_variation = &"HeaderMedium"
+text = "Inherited Scenes"
 vertical_alignment = 1
 text_overrun_behavior = 3
 
-[node name="Button" type="Button" parent="VBoxContainer2/ScrollContainer/Content/HBoxContainer2"]
-visible = false
+[node name="CreateScenesCheckbox" type="CheckBox" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection"]
+unique_name_in_owner = true
 layout_mode = 2
-text = "Extract Materials"
+tooltip_text = "Create inherited scenes of the selected models and save them to the chosen directory."
+text = "Create Inherited Scenes"
+
+[node name="InheritedSceneRow" type="VBoxContainer" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="InheritedScenePath" type="TextEdit" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection/InheritedSceneRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+mouse_filter = 1
+mouse_default_cursor_shape = 0
+theme_override_colors/font_readonly_color = Color(0.875, 0.875, 0.875, 1)
+placeholder_text = "Set a path for the inherited scenes..."
+editable = false
+context_menu_enabled = false
+emoji_menu_enabled = false
+shortcut_keys_enabled = false
+selecting_enabled = false
+deselect_on_focus_loss_enabled = false
+drag_and_drop_selection_enabled = false
+virtual_keyboard_enabled = false
+middle_mouse_paste_enabled = false
+empty_selection_clipboard_enabled = false
+scroll_fit_content_height = true
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection/InheritedSceneRow"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="SetInheritedScenePath" type="Button" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection/InheritedSceneRow/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Set Path"
+
+[node name="ClearInheritedScenePath" type="Button" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection/InheritedSceneRow/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Clear
+"
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection"]
+layout_mode = 2
+theme_override_constants/separation = 8
 
 [node name="MaterialsSection" type="VBoxContainer" parent="VBoxContainer2/ScrollContainer/Content"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_constants/separation = 4
 
 [node name="Label" type="Label" parent="VBoxContainer2/ScrollContainer/Content/MaterialsSection"]
 layout_mode = 2
@@ -108,50 +161,57 @@ text_overrun_behavior = 3
 [node name="ExtractMaterialsCheckbox" type="CheckBox" parent="VBoxContainer2/ScrollContainer/Content/MaterialsSection"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Extract Materials?"
+tooltip_text = "Extract any materials on the selected models. Extraced materials
+will be overriden by materials selected below with the same name."
+text = "Extract Materials"
 
 [node name="ExtractMaterialPathRow" type="VBoxContainer" parent="VBoxContainer2/ScrollContainer/Content/MaterialsSection"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_constants/separation = 8
 
-[node name="MaterialPathPanel" type="Panel" parent="VBoxContainer2/ScrollContainer/Content/MaterialsSection/ExtractMaterialPathRow"]
-clip_contents = true
-custom_minimum_size = Vector2(0, 48)
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer2/ScrollContainer/Content/MaterialsSection/ExtractMaterialPathRow/MaterialPathPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
-
-[node name="MaterialExportPath" type="Label" parent="VBoxContainer2/ScrollContainer/Content/MaterialsSection/ExtractMaterialPathRow/MaterialPathPanel/MarginContainer"]
+[node name="MaterialExportPath" type="TextEdit" parent="VBoxContainer2/ScrollContainer/Content/MaterialsSection/ExtractMaterialPathRow"]
 unique_name_in_owner = true
 layout_mode = 2
-clip_text = true
-text_overrun_behavior = 3
+size_flags_horizontal = 3
+focus_mode = 0
+mouse_filter = 1
+mouse_default_cursor_shape = 0
+theme_override_colors/font_readonly_color = Color(0.875, 0.875, 0.875, 1)
+placeholder_text = "Set a path for the materials..."
+editable = false
+context_menu_enabled = false
+emoji_menu_enabled = false
+shortcut_keys_enabled = false
+selecting_enabled = false
+deselect_on_focus_loss_enabled = false
+drag_and_drop_selection_enabled = false
+virtual_keyboard_enabled = false
+middle_mouse_paste_enabled = false
+empty_selection_clipboard_enabled = false
+scroll_fit_content_height = true
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer2/ScrollContainer/Content/MaterialsSection/ExtractMaterialPathRow"]
 layout_mode = 2
+theme_override_constants/separation = 8
 alignment = 1
 
 [node name="SetMaterialPathButton" type="Button" parent="VBoxContainer2/ScrollContainer/Content/MaterialsSection/ExtractMaterialPathRow/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Set Materials Path"
+text = "Set Path"
 
 [node name="ClearMaterialsPathButton" type="Button" parent="VBoxContainer2/ScrollContainer/Content/MaterialsSection/ExtractMaterialPathRow/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Clear
 "
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer2/ScrollContainer/Content/MaterialsSection/ExtractMaterialPathRow"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 8
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer2/ScrollContainer/Content/MaterialsSection"]
 layout_mode = 2
@@ -165,7 +225,7 @@ text = "Selected Materials:"
 [node name="SelectMaterialsButton" type="Button" parent="VBoxContainer2/ScrollContainer/Content/MaterialsSection/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Select"
+text = "Add"
 
 [node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer2/ScrollContainer/Content/MaterialsSection"]
 layout_mode = 2
@@ -184,6 +244,7 @@ text = "No materials selected"
 
 [node name="HSeparator" type="HSeparator" parent="VBoxContainer2/ScrollContainer/Content"]
 layout_mode = 2
+theme_override_constants/separation = 8
 
 [node name="SetMatsButton" type="Button" parent="VBoxContainer2"]
 unique_name_in_owner = true
