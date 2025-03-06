@@ -23,20 +23,22 @@ func _exit_tree():
 	bulk_set_material_dock = null
 
 
-func set_mats(selected_files, target_materials) -> void:
+func set_mats(selected_files, options: Dictionary) -> void:
+	print(options)
+	var selected_materials = options.selected_materials
 	mat_name_regex.compile("/([^/.]+).(?:tres|res)$")
 	subres_regex.compile("_subresources=([\\w={}\\n\\s\":/,.]+})")
 	
 	for file_path in selected_files:
 		if FileAccess.file_exists(file_path):
-			_handle_file(file_path, target_materials)
+			_handle_file(file_path, selected_materials)
 		elif DirAccess.dir_exists_absolute(file_path):
-			_handle_directory(file_path, target_materials)
+			_handle_directory(file_path, selected_materials)
 	
 	EditorInterface.get_resource_filesystem().scan_sources()
 
 
-func _handle_directory(dir_path, target_materials) -> void:
+func _handle_directory(dir_path, selected_materials) -> void:
 	var dir = DirAccess.open(dir_path)
 	
 	if dir:
@@ -44,12 +46,12 @@ func _handle_directory(dir_path, target_materials) -> void:
 		var file_name = dir.get_next()
 		while file_name != "":
 			if !dir.current_is_dir():
-				_handle_file(dir_path + file_name, target_materials)
+				_handle_file(dir_path + file_name, selected_materials)
 			file_name = dir.get_next()
 		dir.list_dir_end()
 
 
-func _handle_file(file_path, target_materials) -> void:
+func _handle_file(file_path, selected_materials) -> void:
 	if !_check_file_format(file_path):
 		return
 	
@@ -60,7 +62,7 @@ func _handle_file(file_path, target_materials) -> void:
 	var subres_json_string = res.get_string(1)
 	var subresources_json = JSON.parse_string(subres_json_string)
 	
-	_set_materials(subresources_json, target_materials)
+	_set_materials(subresources_json, selected_materials)
 	
 	content = content.replace(subres_json_string, JSON.stringify(subresources_json))
 	

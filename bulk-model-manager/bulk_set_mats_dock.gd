@@ -18,7 +18,7 @@ var editor_parent : EditorPlugin
 @onready var no_mats_label: Label = %NoMatsLabel
 @onready var tab_parent: TabContainer = self.get_parent()
 @onready var extract_materials_checkbox: CheckBox = %ExtractMaterialsCheckbox
-@onready var extract_material_path_row: HBoxContainer = %ExtractMaterialPathRow
+@onready var extract_material_path_row: VBoxContainer = %ExtractMaterialPathRow
 @onready var material_export_path_label: Label = %MaterialExportPath
 @onready var set_material_path_button: Button = %SetMaterialPathButton
 
@@ -53,6 +53,8 @@ func _set_dialog_settngs(dialog: EditorFileDialog) -> void:
 	dialog.size = Vector2(1024, 576)
 
 func _process(delta: float) -> void:
+	if file_name_regex == null:
+		return
 	if tab_parent != null and self != tab_parent.get_current_tab_control():
 		return
 
@@ -60,7 +62,7 @@ func _process(delta: float) -> void:
 	var current_path_count = current_paths.size()
 	if current_path_count == 0:
 		selected_file_count.text = "No selected file"
-	elif current_path_count == 1:
+	elif current_path_count == 1 and current_paths[0] != null:
 		var mat_path_res = file_name_regex.search(current_paths[0])
 		var mat_path_name = ""
 		if mat_path_res:
@@ -71,7 +73,11 @@ func _process(delta: float) -> void:
 
 
 func _on_set_mats_pressed() -> void:
-	editor_parent.set_mats(EditorInterface.get_selected_paths(), selected_materials)
+	editor_parent.set_mats(EditorInterface.get_selected_paths(), {
+		"selected_materials": selected_materials,
+		"extract_materials": extract_materials_checkbox.button_pressed,
+		"material_export_path": material_export_path
+	})
 
 
 func _file_selected(paths):
@@ -104,15 +110,26 @@ func _update_material_labels() -> void:
 
 
 func _on_list_change() -> void:
-	set_mats_button.disabled = selected_materials.size() == 0
 	no_mats_label.visible = selected_materials.size() == 0
+	_check_apply_disabled()
+
+
+func _check_apply_disabled() -> void:
+	var is_disabled : bool = false
+	if selected_materials.size() == 0 and !extract_materials_checkbox.button_pressed:
+		set_mats_button.disabled = true
+	elif extract_materials_checkbox.button_pressed and !material_export_path:
+		set_mats_button.disabled = true
+	else:
+		set_mats_button.disabled = false
 
 
 func _on_extract_toggled(value: bool) -> void:
 	extract_material_path_row.visible = value
-	set_mats_button.disabled = value and !material_export_path
+	_check_apply_disabled()
 
 
 func _mat_export_path_selected(path) -> void:
 	material_export_path_label.text = path
 	material_export_path = path
+	_check_apply_disabled()
