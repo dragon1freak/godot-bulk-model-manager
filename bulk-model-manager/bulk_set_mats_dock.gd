@@ -8,7 +8,7 @@ enum COLLIDER_PLACEMENT { Sibling, StaticBodyChild }
 enum COLLIDER_TYPE { Trimesh, SingleConvex, SimplifiedConvex, MultipleConvex }
 
 var file_name_regex : RegEx
-var file_dialog : EditorFileDialog
+var add_material_dialog : EditorFileDialog
 var material_export_path_dialog : EditorFileDialog
 var inherited_scene_path_dialog : EditorFileDialog
 var material_export_path : String
@@ -46,7 +46,7 @@ var editor_parent : EditorPlugin
 func _ready() -> void:
 	# Buttons ----------------------
 	set_mats_button.pressed.connect(_on_set_mats_pressed)
-	select_materials_button.pressed.connect(func(): file_dialog.show())
+	select_materials_button.pressed.connect(func(): add_material_dialog.show())
 	_on_extract_toggled(false)
 	extract_materials_checkbox.toggled.connect(_on_extract_toggled)
 	set_material_path_button.pressed.connect(func(): material_export_path_dialog.show())
@@ -63,12 +63,12 @@ func _ready() -> void:
 	file_name_regex.compile("/([^/.]+.\\w+)$")
 	
 	# Dialogs -----------------------
-	file_dialog = EditorFileDialog.new()
-	_set_dialog_settings(file_dialog)
-	file_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILES
-	file_dialog.add_filter("*.tres,*.res", "Resources")
-	file_dialog.files_selected.connect(_on_material_selected)
-	EditorInterface.get_base_control().add_child(file_dialog)
+	add_material_dialog = EditorFileDialog.new()
+	_set_dialog_settings(add_material_dialog)
+	add_material_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILES
+	add_material_dialog.add_filter("*.tres,*.res", "Resources")
+	add_material_dialog.files_selected.connect(_on_material_selected)
+	EditorInterface.get_base_control().add_child(add_material_dialog)
 	
 	material_export_path_dialog = EditorFileDialog.new()
 	_set_dialog_settings(material_export_path_dialog)
@@ -109,17 +109,29 @@ func _process(delta: float) -> void:
 
 
 func _on_set_mats_pressed() -> void:
-	editor_parent.apply(EditorInterface.get_selected_paths(), {
-		"selected_materials": selected_materials,
-		"extract_materials": extract_materials_checkbox.button_pressed,
-		"material_export_path": material_export_path,
-		"create_inherited_scenes": create_scenes_checkbox.button_pressed,
-		"inherited_scene_path": inherited_scene_path,
-		"create_colliders": create_colliders_checkbox.button_pressed,
-		"collider_placement": collider_placement_button.selected,
-		"collider_type": collider_type_button.selected,
-		"mirror_directory": mirror_directory_checkbox.button_pressed
-	})
+	var confirim_dialog = ConfirmationDialog.new()
+	confirim_dialog.title = "Process Models"
+	confirim_dialog.dialog_text = "Are you sure you want to apply the configured actions to the selected models?\n
+									If the created scenes or extracted materials aren't behaving as intended, try reloading the project."
+	
+	confirim_dialog.confirmed.connect(func():
+		editor_parent.apply(EditorInterface.get_selected_paths(), {
+			"selected_materials": selected_materials,
+			"extract_materials": extract_materials_checkbox.button_pressed,
+			"material_export_path": material_export_path,
+			"create_inherited_scenes": create_scenes_checkbox.button_pressed,
+			"inherited_scene_path": inherited_scene_path,
+			"create_colliders": create_colliders_checkbox.button_pressed,
+			"collider_placement": collider_placement_button.selected,
+			"collider_type": collider_type_button.selected,
+			"mirror_directory": mirror_directory_checkbox.button_pressed
+		})
+	)
+	
+	add_child(confirim_dialog)
+	confirim_dialog.popup_centered()
+	confirim_dialog.show()
+
 
 
 func _check_apply_disabled() -> void:
