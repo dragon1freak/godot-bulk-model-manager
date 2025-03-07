@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://kmtumppth65d"]
+[gd_scene load_steps=3 format=3 uid="uid://kmtumppth65d"]
 
-[ext_resource type="Script" uid="uid://cxrqw2kmtcgvq" path="res://addons/bulk-model-manager/bulk_set_mats_dock.gd" id="1_vkejt"]
+[ext_resource type="Script" uid="uid://cxrqw2kmtcgvq" path="res://addons/bulk-model-manager/bmm_dock.gd" id="1_d2uv2"]
+[ext_resource type="Texture2D" uid="uid://cpd0tas080wf7" path="res://addons/bulk-model-manager/info-circle.svg" id="2_w3sqj"]
 
 [node name="BMM" type="Control"]
 layout_mode = 3
@@ -9,7 +10,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_vkejt")
+script = ExtResource("1_d2uv2")
 
 [node name="VBoxContainer2" type="VBoxContainer" parent="."]
 layout_mode = 1
@@ -22,13 +23,24 @@ grow_vertical = 2
 [node name="Header" type="VBoxContainer" parent="VBoxContainer2"]
 layout_mode = 2
 
-[node name="Title" type="Label" parent="VBoxContainer2/Header"]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer2/Header"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="VBoxContainer2/Header/HBoxContainer"]
 custom_minimum_size = Vector2(40, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_type_variation = &"HeaderSmall"
 text = "Dragon1Freak's Bulk Model Manager"
 autowrap_mode = 3
 justification_flags = 162
+
+[node name="InfoDialogButton" type="Button" parent="VBoxContainer2/Header/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+icon = ExtResource("2_w3sqj")
+icon_alignment = 1
 
 [node name="Label" type="Label" parent="VBoxContainer2/Header"]
 visible = false

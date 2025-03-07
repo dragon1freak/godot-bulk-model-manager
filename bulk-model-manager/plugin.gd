@@ -33,7 +33,7 @@ func _ready() -> void:
 
 
 func _enter_tree():
-	bulk_set_material_dock = preload("bulk_set_mats_dock.tscn").instantiate()
+	bulk_set_material_dock = preload("bmm_dock.tscn").instantiate()
 	bulk_set_material_dock.editor_parent = self
 	add_control_to_dock(EditorPlugin.DOCK_SLOT_LEFT_UR, bulk_set_material_dock)
 
@@ -56,12 +56,15 @@ func apply(selected_files, options: Dictionary) -> void:
 	# Extract any materials on the selected models that dont match a selected material
 	if options.extract_materials:
 		_extract_materials(selected_files, options.material_export_path)
+		print("--- Materials extracted ---")
 	# Set all materials selected or extracted to the models use external paths
 	if materials_to_set.keys().size() > 0:
 		_set_mats(selected_files)
+		print("--- External Materials Set ---")
 	
 	if options.create_inherited_scenes:
 		_create_inherited_scenes(selected_files, options)
+		print("--- Inherited Scenes Created ---")
 		
 	EditorInterface.get_resource_filesystem().scan_sources()
 
@@ -71,7 +74,6 @@ func apply(selected_files, options: Dictionary) -> void:
 func _extract_materials(selected_files, mat_export_path) -> void:
 	for file_path in selected_files:
 		_handle_dir_or_file(file_path, _extract_from_file, [mat_export_path])
-	print("extract the stuff")
 
 
 func _extract_from_file(file_path, mat_export_path) -> void:
@@ -103,7 +105,6 @@ func _extract_from_file(file_path, mat_export_path) -> void:
 func _create_inherited_scenes(selected_files, options) -> void:
 	for file_path in selected_files:
 		_handle_dir_or_file(file_path, _create_scene, [options])
-	print("inherit the stuff")
 
 
 func _create_scene(file_path, options) -> void:
@@ -196,7 +197,6 @@ func _set_mats_on_file(file_path) -> void:
 	file.store_string(content)
 	file.close()
 	files_to_reimport.push_back(file_path)
-	print("set the stuff", materials_to_set)
 
 
 func _set_materials(object: Dictionary) -> void:
@@ -242,8 +242,8 @@ func _handle_dir_or_file(path, callable : Callable, args = []) -> void:
 	current_directory_name = ""
 	if FileAccess.file_exists(path):
 		if !_check_file_format(path):
-			#print("bad file", path)
 			return
+		
 		var _args = [path]
 		_args.append_array(args)
 		callable.callv(_args)
@@ -260,27 +260,6 @@ func _handle_dir_or_file(path, callable : Callable, args = []) -> void:
 						var _args = [file_path]
 						_args.append_array(args)
 						callable.callv(_args)
-					else:
-						print("bad file in dir", file_path)
 				file_name = dir.get_next()
 			dir.list_dir_end()
-
-
-#func _reimport_files(step = 0):
-	#if EditorInterface.get_resource_filesystem().is_scanning():
-		#await get_tree().create_timer(0.1).timeout
-		#return await _reimport_files(step)
-	#else:
-		#match step:
-			#0:
-				#EditorInterface.get_resource_filesystem().scan()
-			#1:
-				#EditorInterface.get_resource_filesystem().scan_sources()
-			#2:
-				#print(files_to_reimport)
-				#EditorInterface.get_resource_filesystem().reimport_files(files_to_reimport)
-		#
-		#step += 1
-		#if step < 2:
-			#_reimport_files(step)
 #endregion

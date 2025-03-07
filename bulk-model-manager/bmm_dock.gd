@@ -2,7 +2,7 @@
 extends Control
 
 
-const BSM_MATERIAL_LABEL = preload("res://addons/bulk-model-manager/bsm_material_label.tscn")
+const BSM_MATERIAL_LABEL = preload("res://addons/bulk-model-manager/bmm_material_label.tscn")
 
 enum COLLIDER_PLACEMENT { Sibling, StaticBodyChild }
 enum COLLIDER_TYPE { Trimesh, SingleConvex, SimplifiedConvex, MultipleConvex }
@@ -19,6 +19,8 @@ var editor_parent : EditorPlugin
 @onready var set_mats_button: Button = %SetMatsButton
 @onready var selected_file_count: TextEdit = %SelectedFileCount
 @onready var mirror_directory_checkbox: CheckBox = %MirrorDirectoryCheckbox
+@onready var info_dialog_button: Button = %InfoDialogButton
+@onready var info_dialog: AcceptDialog = AcceptDialog.new()
 
 @onready var select_materials_button: Button = %SelectMaterialsButton
 @onready var material_labels: VBoxContainer = %MaterialLabels
@@ -45,17 +47,18 @@ var editor_parent : EditorPlugin
 
 func _ready() -> void:
 	# Buttons ----------------------
+	info_dialog_button.pressed.connect(func(): info_dialog.popup_centered())
 	set_mats_button.pressed.connect(_on_set_mats_pressed)
-	select_materials_button.pressed.connect(func(): add_material_dialog.show())
+	select_materials_button.pressed.connect(func(): add_material_dialog.popup_file_dialog())
 	_on_extract_toggled(false)
 	extract_materials_checkbox.toggled.connect(_on_extract_toggled)
-	set_material_path_button.pressed.connect(func(): material_export_path_dialog.show())
+	set_material_path_button.pressed.connect(func(): material_export_path_dialog.popup_file_dialog())
 	clear_materials_path_button.pressed.connect(func(): _mat_export_path_selected(""))
 	_on_inherited_scene_toggled(false)
 	_on_create_colliders_toggled(false)
 	create_scenes_checkbox.toggled.connect(_on_inherited_scene_toggled)
 	create_colliders_checkbox.toggled.connect(_on_create_colliders_toggled)
-	set_inherited_scene_path.pressed.connect(func(): inherited_scene_path_dialog.show())
+	set_inherited_scene_path.pressed.connect(func(): inherited_scene_path_dialog.popup_file_dialog())
 	clear_inherited_scene_path.pressed.connect(func(): _inherited_scene_path_selected(""))
 	_on_list_change()
 	
@@ -81,6 +84,21 @@ func _ready() -> void:
 	inherited_scene_path_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_DIR
 	inherited_scene_path_dialog.dir_selected.connect(_inherited_scene_path_selected)
 	EditorInterface.get_base_control().add_child(inherited_scene_path_dialog)
+	
+	# Info dialog
+	info_dialog.title = "Dragon1Freak's BMM Info"
+	info_dialog.dialog_text = "Here are some common issues and what to do about them:
+								
+								FileAccess errors in the console
+								\t    - As long as everything worked as expected, just ignore them!
+								
+								The material extraction and/or inherited scene creation process was successful, but
+								my model is showing the incorrect material or the inherited scene doesnt look right
+								\t    - In some cases the process may be successful but the resources won't be completely
+								\t      reimported as expected, such as processing large amounts of models.  Reloading the 
+								\t      project should resolve this issue as it will rescan all of the resources again.
+								"
+	add_child(info_dialog)
 
 
 func _set_dialog_settings(dialog: EditorFileDialog) -> void:
@@ -133,7 +151,6 @@ func _on_set_mats_pressed() -> void:
 	confirim_dialog.show()
 
 
-
 func _check_apply_disabled() -> void:
 	var is_disabled : bool = false
 	if selected_materials.size() == 0 and !extract_materials_checkbox.button_pressed and !create_scenes_checkbox.button_pressed:
@@ -150,6 +167,7 @@ func _check_apply_disabled() -> void:
 		set_mats_button.tooltip_text = ""
 
 
+#region Material Selection
 # Material Selection -----------------------------------
 func _on_material_selected(paths):
 	var new_materials = Array(paths).filter(func(path): return !selected_materials.has(path))
@@ -185,7 +203,10 @@ func _on_list_change() -> void:
 	no_mats_label.visible = selected_materials.size() == 0
 	_check_apply_disabled()
 
+#endregion
 
+
+#region Material Extract
 # Material Exctract ------------------------------------
 func _on_extract_toggled(value: bool) -> void:
 	extract_material_path_row.visible = value
@@ -197,7 +218,10 @@ func _mat_export_path_selected(path) -> void:
 	material_export_path = path
 	_check_apply_disabled()
 
+#endregion
 
+
+#region Inherited Scenes
 # Inherited Scene --------------------------------------
 func _inherited_scene_path_selected(path) -> void:
 	inherited_scene_path_label.text = path
@@ -213,3 +237,4 @@ func _on_inherited_scene_toggled(value: bool) -> void:
 func _on_create_colliders_toggled(value: bool) -> void:
 	create_colliders_row.visible = value
 	_check_apply_disabled()
+#endregion
