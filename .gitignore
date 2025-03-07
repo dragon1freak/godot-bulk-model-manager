@@ -16,3 +16,4 @@ mono_crash.*.json
 
 # Dependancies we want to ignore
 godot-plugin-refresher/
+zylann.editor_debugger/

@@ -89,7 +89,7 @@ theme_override_constants/separation = 4
 [node name="Label" type="Label" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection"]
 layout_mode = 2
 theme_type_variation = &"HeaderMedium"
-text = "Inherited Scenes"
+text = "Scenes"
 vertical_alignment = 1
 text_overrun_behavior = 3
 

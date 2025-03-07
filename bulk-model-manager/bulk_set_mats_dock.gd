@@ -99,10 +99,12 @@ func _process(delta: float) -> void:
 
 
 func _on_set_mats_pressed() -> void:
-	editor_parent.set_mats(EditorInterface.get_selected_paths(), {
+	editor_parent.apply(EditorInterface.get_selected_paths(), {
 		"selected_materials": selected_materials,
 		"extract_materials": extract_materials_checkbox.button_pressed,
-		"material_export_path": material_export_path
+		"material_export_path": material_export_path,
+		"create_inherited_scenes": create_scenes_checkbox.button_pressed,
+		"inherited_scene_path": inherited_scene_path
 	})
 
 
