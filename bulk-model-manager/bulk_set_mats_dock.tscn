@@ -40,6 +40,27 @@ If you select a directory or your selection contains files that are not 3D model
 autowrap_mode = 3
 justification_flags = 162
 
+[node name="SelectedFileCount" type="TextEdit" parent="VBoxContainer2/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+mouse_filter = 1
+mouse_default_cursor_shape = 0
+theme_override_colors/font_readonly_color = Color(0.875, 0.875, 0.875, 1)
+text = "plugin.cfg"
+editable = false
+context_menu_enabled = false
+emoji_menu_enabled = false
+shortcut_keys_enabled = false
+selecting_enabled = false
+deselect_on_focus_loss_enabled = false
+drag_and_drop_selection_enabled = false
+virtual_keyboard_enabled = false
+middle_mouse_paste_enabled = false
+empty_selection_clipboard_enabled = false
+scroll_fit_content_height = true
+
 [node name="HSeparator" type="HSeparator" parent="VBoxContainer2/Header"]
 layout_mode = 2
 theme_override_constants/separation = 8
@@ -60,27 +81,6 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"HeaderSmall"
 text = "Selected File(s):"
-
-[node name="SelectedFileCount" type="TextEdit" parent="VBoxContainer2/ScrollContainer/Content"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-focus_mode = 0
-mouse_filter = 1
-mouse_default_cursor_shape = 0
-theme_override_colors/font_readonly_color = Color(0.875, 0.875, 0.875, 1)
-text = "plugin.cfg"
-editable = false
-context_menu_enabled = false
-emoji_menu_enabled = false
-shortcut_keys_enabled = false
-selecting_enabled = false
-deselect_on_focus_loss_enabled = false
-drag_and_drop_selection_enabled = false
-virtual_keyboard_enabled = false
-middle_mouse_paste_enabled = false
-empty_selection_clipboard_enabled = false
-scroll_fit_content_height = true
 
 [node name="InheritedSceneSection" type="VBoxContainer" parent="VBoxContainer2/ScrollContainer/Content"]
 layout_mode = 2
@@ -104,6 +104,14 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 8
+
+[node name="MirrorDirectoryCheckbox" type="CheckBox" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection/InheritedSceneRow"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "If a directory is selected, any created scenes will be placed into 
+directories of the same name in the target path"
+button_pressed = true
+text = "Mirror Directory Structure"
 
 [node name="InheritedScenePath" type="TextEdit" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection/InheritedSceneRow"]
 unique_name_in_owner = true
@@ -142,6 +150,48 @@ layout_mode = 2
 text = "Clear
 "
 
+[node name="CreateCollidersCheckbox" type="CheckBox" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection/InheritedSceneRow"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Create inherited scenes of the selected models and save them to the chosen directory."
+text = "Create Colliders from Meshes"
+
+[node name="CreateCollidersRow" type="VBoxContainer" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection/InheritedSceneRow"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection/InheritedSceneRow/CreateCollidersRow"]
+layout_mode = 2
+text = "Collider Shape Placement"
+
+[node name="ColliderPlacementButton" type="OptionButton" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection/InheritedSceneRow/CreateCollidersRow"]
+unique_name_in_owner = true
+layout_mode = 2
+selected = 0
+item_count = 2
+popup/item_0/text = "Sibling"
+popup/item_0/id = 0
+popup/item_1/text = "Static Body Child"
+popup/item_1/id = 1
+
+[node name="Label2" type="Label" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection/InheritedSceneRow/CreateCollidersRow"]
+layout_mode = 2
+text = "Collider Shape Type"
+
+[node name="ColliderTypeButton" type="OptionButton" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection/InheritedSceneRow/CreateCollidersRow"]
+unique_name_in_owner = true
+layout_mode = 2
+selected = 0
+item_count = 4
+popup/item_0/text = "Trimesh"
+popup/item_0/id = 0
+popup/item_1/text = "Single Convex"
+popup/item_1/id = 1
+popup/item_2/text = "Simplified Convex"
+popup/item_2/id = 2
+popup/item_3/text = "Multiple Convex"
+popup/item_3/id = 3
+
 [node name="HSeparator" type="HSeparator" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection"]
 layout_mode = 2
 theme_override_constants/separation = 8
@@ -162,7 +212,8 @@ text_overrun_behavior = 3
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Extract any materials on the selected models. Extraced materials
-will be overriden by materials selected below with the same name."
+will be overriden by materials selected below with the same name.
+If the material already exists at the chosen directory it will be used instead."
 text = "Extract Materials"
 
 [node name="ExtractMaterialPathRow" type="VBoxContainer" parent="VBoxContainer2/ScrollContainer/Content/MaterialsSection"]
@@ -227,26 +278,30 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Add"
 
-[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer2/ScrollContainer/Content/MaterialsSection"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="MaterialLabels" type="VBoxContainer" parent="VBoxContainer2/ScrollContainer/Content/MaterialsSection/ScrollContainer"]
+[node name="MaterialLabels" type="VBoxContainer" parent="VBoxContainer2/ScrollContainer/Content/MaterialsSection"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="NoMatsLabel" type="Label" parent="VBoxContainer2/ScrollContainer/Content/MaterialsSection/ScrollContainer/MaterialLabels"]
+[node name="NoMatsLabel" type="Label" parent="VBoxContainer2/ScrollContainer/Content/MaterialsSection/MaterialLabels"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "No materials selected"
 
-[node name="HSeparator" type="HSeparator" parent="VBoxContainer2/ScrollContainer/Content"]
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer2/ScrollContainer/Content/MaterialsSection"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Footer" type="VBoxContainer" parent="VBoxContainer2"]
+layout_mode = 2
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer2/Footer"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="SetMatsButton" type="Button" parent="VBoxContainer2"]
+[node name="SetMatsButton" type="Button" parent="VBoxContainer2/Footer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4

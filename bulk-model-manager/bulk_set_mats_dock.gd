@@ -4,6 +4,9 @@ extends Control
 
 const BSM_MATERIAL_LABEL = preload("res://addons/bulk-model-manager/bsm_material_label.tscn")
 
+enum COLLIDER_PLACEMENT { Sibling, StaticBodyChild }
+enum COLLIDER_TYPE { Trimesh, SingleConvex, SimplifiedConvex, MultipleConvex }
+
 var file_name_regex : RegEx
 var file_dialog : EditorFileDialog
 var material_export_path_dialog : EditorFileDialog
@@ -15,6 +18,7 @@ var editor_parent : EditorPlugin
 
 @onready var set_mats_button: Button = %SetMatsButton
 @onready var selected_file_count: TextEdit = %SelectedFileCount
+@onready var mirror_directory_checkbox: CheckBox = %MirrorDirectoryCheckbox
 
 @onready var select_materials_button: Button = %SelectMaterialsButton
 @onready var material_labels: VBoxContainer = %MaterialLabels
@@ -33,6 +37,10 @@ var editor_parent : EditorPlugin
 @onready var inherited_scene_path_label: TextEdit = %InheritedScenePath
 @onready var set_inherited_scene_path: Button = %SetInheritedScenePath
 @onready var clear_inherited_scene_path: Button = %ClearInheritedScenePath
+@onready var create_colliders_checkbox: CheckBox = %CreateCollidersCheckbox
+@onready var create_colliders_row: VBoxContainer = %CreateCollidersRow
+@onready var collider_placement_button: OptionButton = %ColliderPlacementButton
+@onready var collider_type_button: OptionButton = %ColliderTypeButton
 
 
 func _ready() -> void:
@@ -44,7 +52,9 @@ func _ready() -> void:
 	set_material_path_button.pressed.connect(func(): material_export_path_dialog.show())
 	clear_materials_path_button.pressed.connect(func(): _mat_export_path_selected(""))
 	_on_inherited_scene_toggled(false)
+	_on_create_colliders_toggled(false)
 	create_scenes_checkbox.toggled.connect(_on_inherited_scene_toggled)
+	create_colliders_checkbox.toggled.connect(_on_create_colliders_toggled)
 	set_inherited_scene_path.pressed.connect(func(): inherited_scene_path_dialog.show())
 	clear_inherited_scene_path.pressed.connect(func(): _inherited_scene_path_selected(""))
 	_on_list_change()
@@ -104,13 +114,17 @@ func _on_set_mats_pressed() -> void:
 		"extract_materials": extract_materials_checkbox.button_pressed,
 		"material_export_path": material_export_path,
 		"create_inherited_scenes": create_scenes_checkbox.button_pressed,
-		"inherited_scene_path": inherited_scene_path
+		"inherited_scene_path": inherited_scene_path,
+		"create_colliders": create_colliders_checkbox.button_pressed,
+		"collider_placement": collider_placement_button.selected,
+		"collider_type": collider_type_button.selected,
+		"mirror_directory": mirror_directory_checkbox.button_pressed
 	})
 
 
 func _check_apply_disabled() -> void:
 	var is_disabled : bool = false
-	if selected_materials.size() == 0 and !extract_materials_checkbox.button_pressed:
+	if selected_materials.size() == 0 and !extract_materials_checkbox.button_pressed and !create_scenes_checkbox.button_pressed:
 		set_mats_button.disabled = true
 		set_mats_button.tooltip_text = "Select one or more materials"
 	elif extract_materials_checkbox.button_pressed and !material_export_path:
@@ -171,6 +185,7 @@ func _mat_export_path_selected(path) -> void:
 	material_export_path = path
 	_check_apply_disabled()
 
+
 # Inherited Scene --------------------------------------
 func _inherited_scene_path_selected(path) -> void:
 	inherited_scene_path_label.text = path
@@ -180,4 +195,9 @@ func _inherited_scene_path_selected(path) -> void:
 
 func _on_inherited_scene_toggled(value: bool) -> void:
 	inherited_scene_row.visible = value
+	_check_apply_disabled()
+
+
+func _on_create_colliders_toggled(value: bool) -> void:
+	create_colliders_row.visible = value
 	_check_apply_disabled()
