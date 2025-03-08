@@ -1,0 +1,17 @@
+[gd_scene load_steps=2 format=3 uid="uid://bwht7fhtai823"]
+
+[ext_resource type="Texture2D" uid="uid://dp4pdgogjxbmh" path="res://addons/bulk_set_material/trash-solid.svg" id="1_kc2im"]
+
+[node name="MaterialLabel" type="HBoxContainer"]
+theme_override_constants/separation = 8
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 2
+theme_override_constants/icon_max_width = 16
+icon = ExtResource("1_kc2im")
+icon_alignment = 1
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Material Path"

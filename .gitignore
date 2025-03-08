@@ -13,3 +13,9 @@ export_presets.cfg
 .mono/
 data_*/
 mono_crash.*.json
+
+.DS_Store
+
+# Dependancies we want to ignore
+godot-plugin-refresher/
+zylann.editor_debugger/

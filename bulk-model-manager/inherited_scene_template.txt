@@ -1,0 +1,5 @@
+[gd_scene load_steps=1 format=3 uid="new_scene_uid"]
+
+[ext_resource type="PackedScene" uid="imported_model_uid" path="imported_model_path" id="imported_model_id"]
+
+[node name="new_scene_name" instance=ExtResource("imported_model_id")]
