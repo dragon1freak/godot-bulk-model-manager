@@ -109,13 +109,20 @@ text_overrun_behavior = 3
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Create inherited scenes of the selected models and save them to the chosen directory."
-text = "Create Inherited Scenes"
+text = "Create Scenes"
 
 [node name="InheritedSceneRow" type="VBoxContainer" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 8
+
+[node name="ScenesInheritedCheckbox" type="CheckBox" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection/InheritedSceneRow"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "If checked, the created scenes will inherit from their related model"
+button_pressed = true
+text = "Scenes Are Inherited"
 
 [node name="MirrorDirectoryCheckbox" type="CheckBox" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection/InheritedSceneRow"]
 unique_name_in_owner = true
@@ -161,6 +168,53 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Clear
 "
+
+[node name="CustomNodeTypeCheckbox" type="CheckBox" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection/InheritedSceneRow"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Set the root node type to something other than Node3D or whatever is already set on the model"
+text = "Set Root Node Type"
+
+[node name="CustomNodeTypeRow" type="VBoxContainer" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection/InheritedSceneRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CustomNodeTypeLabel" type="TextEdit" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection/InheritedSceneRow/CustomNodeTypeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+mouse_filter = 1
+mouse_default_cursor_shape = 0
+theme_override_colors/font_readonly_color = Color(0.875, 0.875, 0.875, 1)
+placeholder_text = "Custom Root Node Type..."
+editable = false
+context_menu_enabled = false
+emoji_menu_enabled = false
+shortcut_keys_enabled = false
+selecting_enabled = false
+deselect_on_focus_loss_enabled = false
+drag_and_drop_selection_enabled = false
+virtual_keyboard_enabled = false
+middle_mouse_paste_enabled = false
+empty_selection_clipboard_enabled = false
+scroll_fit_content_height = true
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection/InheritedSceneRow/CustomNodeTypeRow"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="NodeTypeButton" type="Button" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection/InheritedSceneRow/CustomNodeTypeRow/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Set Type"
+
+[node name="ClearNodeTypeButton" type="Button" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection/InheritedSceneRow/CustomNodeTypeRow/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Clear"
 
 [node name="CreateCollidersCheckbox" type="CheckBox" parent="VBoxContainer2/ScrollContainer/Content/InheritedSceneSection/InheritedSceneRow"]
 unique_name_in_owner = true
@@ -319,3 +373,10 @@ layout_mode = 2
 size_flags_horizontal = 4
 disabled = true
 text = "Apply"
+
+[node name="ReimportButton" type="Button" parent="VBoxContainer2/Footer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Reimport"

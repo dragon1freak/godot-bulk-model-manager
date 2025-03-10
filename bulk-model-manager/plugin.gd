@@ -10,22 +10,24 @@ var INHERITED_SCENE_TEMPLATE : String = ""
 
 var bulk_set_material_dock
 var materials_to_set : Dictionary = {} 
-var files_to_reimport : PackedStringArray = []
 
 var mirror_directory := false
 var current_directory_name : String
+var files_to_reimport = []
 
 
 @onready var mat_name_regex : RegEx = RegEx.new()
 @onready var model_name_regex : RegEx = RegEx.new()
 @onready var uid_regex : RegEx = RegEx.new()
 @onready var subres_regex = RegEx.new()
+@onready var node_type_regex = RegEx.new()
 
 
 func _ready() -> void:
 	mat_name_regex.compile("/([^/.]+).(?:tres|res)$")
 	model_name_regex.compile("/([^/.]+).(?:gltf|glb|fbx)$")
 	uid_regex.compile("uid=\"(.+)\"")
+	node_type_regex.compile("(nodes/root_type=\".*\")")
 	subres_regex.compile("_subresources=([\\w={}\\n\\s\":/,.]+})")
 	var file = FileAccess.open(INHERITED_SCENE_TEMPLATE_PATH, FileAccess.READ_WRITE)
 	INHERITED_SCENE_TEMPLATE = file.get_as_text()
@@ -51,7 +53,7 @@ func apply(selected_files, options: Dictionary) -> void:
 		if mat_name:
 			materials_to_set[mat_name] = mat
 	
-	mirror_directory = options.mirror_directory
+	mirror_directory = options.inherited_scene_options.mirror_directory
 	
 	# Extract any materials on the selected models that dont match a selected material
 	if options.extract_materials:
@@ -63,10 +65,17 @@ func apply(selected_files, options: Dictionary) -> void:
 		print("--- External Materials Set ---")
 	
 	if options.create_inherited_scenes:
-		_create_inherited_scenes(selected_files, options)
+		_create_inherited_scenes(selected_files, options.inherited_scene_options)
 		print("--- Inherited Scenes Created ---")
 		
 	EditorInterface.get_resource_filesystem().scan_sources()
+
+
+#func reimport_selection(selected_files) -> void:
+	#files_to_reimport = []
+	#for file in selected_files:
+		#_handle_dir_or_file(file, func(path): files_to_reimport.push_back(path))
+	#EditorInterface.get_resource_filesystem().reimport_files(files_to_reimport)
 
 
 #region Material Extracting
@@ -132,12 +141,28 @@ func _create_scene(file_path, options) -> void:
 	file.close()
 	ResourceUID.add_id(new_scene_uid_int, new_scene_path)
 	
+	if options.custom_node_type != "" and options.custom_node_type != null:
+		_set_custom_type(file_path, options.custom_node_type)
+	
 	_handle_scene_settings(new_scene_path, options)
+
+
+func _set_custom_type(file_path, custom_type) -> void:
+	var file = FileAccess.open(file_path + ".import", FileAccess.READ_WRITE)
+	var content = file.get_as_text()
+	var res = node_type_regex.search(content)
+	var node_type_string = res.get_string(1)
+	
+	content = content.replace(node_type_string, "nodes/root_type=\"" + custom_type + "\"")
+	
+	file.store_string(content)
+	file.close()
 
 
 func _handle_scene_settings(new_scene_path, options) -> void:
 	var packed_scene = load(new_scene_path)
-	var target_scene : Node3D = packed_scene.instantiate(PackedScene.GEN_EDIT_STATE_INSTANCE)
+	var target_scene : Node3D = packed_scene.instantiate(PackedScene.GEN_EDIT_STATE_INSTANCE if options.scenes_are_inherited else PackedScene.GEN_EDIT_STATE_MAIN)
+	
 	if options.create_colliders:
 		_create_colliders(target_scene, options)
 	
@@ -196,7 +221,6 @@ func _set_mats_on_file(file_path) -> void:
 	
 	file.store_string(content)
 	file.close()
-	files_to_reimport.push_back(file_path)
 
 
 func _set_materials(object: Dictionary) -> void:
