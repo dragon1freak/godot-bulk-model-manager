@@ -11,7 +11,6 @@ var INHERITED_SCENE_TEMPLATE : String = ""
 var bulk_set_material_dock
 var materials_to_set : Dictionary = {} 
 
-var mirror_directory := false
 var current_directory_name : String
 var files_to_reimport = []
 
@@ -53,12 +52,10 @@ func apply(selected_files, options: Dictionary) -> void:
 		if mat_name:
 			materials_to_set[mat_name] = mat
 	
-	mirror_directory = options.inherited_scene_options.mirror_directory
-	
 	# Extract any materials on the selected models that dont match a selected material
 	if options.extract_materials:
 		_extract_materials(selected_files, options.material_export_path)
-		print("--- Materials extracted ---")
+		print("--- Materials Extracted ---")
 	# Set all materials selected or extracted to the models use external paths
 	if materials_to_set.keys().size() > 0:
 		_set_mats(selected_files)
@@ -67,6 +64,10 @@ func apply(selected_files, options: Dictionary) -> void:
 	if options.create_inherited_scenes:
 		_create_inherited_scenes(selected_files, options.inherited_scene_options)
 		print("--- Inherited Scenes Created ---")
+	
+	if options.extract_meshes:
+		_extract_meshes(selected_files, options.extract_mesh_options)
+		print("--- Meshes Extracted ---")
 		
 	EditorInterface.get_resource_filesystem().scan_sources()
 
@@ -82,10 +83,10 @@ func apply(selected_files, options: Dictionary) -> void:
 # Material Extraction ------------------------------------------------
 func _extract_materials(selected_files, mat_export_path) -> void:
 	for file_path in selected_files:
-		_handle_dir_or_file(file_path, _extract_from_file, [mat_export_path])
+		_handle_dir_or_file(file_path, _extract_material_from_file, [mat_export_path])
 
 
-func _extract_from_file(file_path, mat_export_path) -> void:
+func _extract_material_from_file(file_path, mat_export_path) -> void:
 	var scene : PackedScene = ResourceLoader.load(file_path, "", ResourceLoader.CACHE_MODE_IGNORE_DEEP)
 	var scene_instance : Node3D = scene.instantiate()
 	var mesh_children = scene_instance.find_children("*", "MeshInstance3D", true)
@@ -131,7 +132,7 @@ func _create_scene(file_path, options) -> void:
 	new_scene_template = new_scene_template.replace("imported_model_uid", imported_model_uid)
 	
 	var base_path = options.inherited_scene_path
-	if mirror_directory and current_directory_name:
+	if options.mirror_directory and current_directory_name:
 		DirAccess.make_dir_absolute(base_path + "/" + current_directory_name)
 		base_path = base_path + "/" + current_directory_name
 	var new_scene_path = base_path + "/" + new_scene_name + ".tscn"
@@ -229,6 +230,63 @@ func _set_materials(object: Dictionary) -> void:
 			object.materials = {}
 			
 		object.materials[mat_name] = {"use_external/enabled": true, "use_external/path": materials_to_set.get(mat_name)}
+
+#endregion
+
+#region Mesh Extracting
+# Mesh Extraction ------------------------------------------------
+func _extract_meshes(selected_files, options) -> void:
+	for file_path in selected_files:
+		_handle_dir_or_file(file_path, _extract_mesh_from_file, [options])
+
+
+func _extract_mesh_from_file(file_path, options) -> void:
+	var scene : PackedScene = ResourceLoader.load(file_path, "", ResourceLoader.CACHE_MODE_IGNORE_DEEP)
+	var scene_instance : Node3D = scene.instantiate()
+	var mesh_children = scene_instance.find_children("*", "MeshInstance3D", true)
+	
+	var meshes_to_set = {}
+	var base_path = options.mesh_export_path
+	if options.mirror_directory and current_directory_name:
+		DirAccess.make_dir_absolute(base_path + "/" + current_directory_name)
+		base_path = base_path + "/" + current_directory_name
+	if options.mesh_file_directory:
+		var model_name = _get_model_name(file_path)
+		DirAccess.make_dir_absolute(base_path + "/" + model_name)
+		base_path = base_path + "/" + model_name
+	
+	for mesh_instance in mesh_children:
+		var mesh : Mesh = mesh_instance.mesh
+		meshes_to_set[mesh.resource_name] = base_path + "/" + mesh.resource_name + ".res"
+	
+	_set_meshes_on_file(file_path, meshes_to_set)
+	
+	scene_instance.free()
+
+
+func _set_meshes_on_file(file_path: String, meshes_to_set: Dictionary) -> void:
+	var file = FileAccess.open(file_path + ".import", FileAccess.READ_WRITE)
+	var content = file.get_as_text()
+	
+	var res = subres_regex.search(content)
+	var subres_json_string = res.get_string(1)
+	var subresources_json = JSON.parse_string(subres_json_string)
+	
+	_set_meshes(subresources_json, meshes_to_set)
+	
+	content = content.replace(subres_json_string, JSON.stringify(subresources_json))
+	
+	file.store_string(content)
+	file.close()
+
+
+func _set_meshes(object: Dictionary, meshes_to_set: Dictionary) -> void:
+	for mesh_name in meshes_to_set.keys():
+		if !object.has("meshes"):
+			object.meshes = {}
+		
+		object.meshes[mesh_name] = {"save_to_file/enabled": true, "save_to_file/path": meshes_to_set.get(mesh_name)}
+
 
 #endregion
 
