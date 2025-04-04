@@ -11,14 +11,16 @@ var file_name_regex : RegEx
 var add_material_dialog : EditorFileDialog
 var material_export_path_dialog : EditorFileDialog
 var inherited_scene_path_dialog : EditorFileDialog
+var mesh_export_path_dialog : EditorFileDialog
 var material_export_path : String
 var inherited_scene_path : String
+var mesh_export_path : String
 var selected_materials : PackedStringArray = []
 var editor_parent : EditorPlugin
 
 @onready var set_mats_button: Button = %SetMatsButton
 @onready var selected_file_count: TextEdit = %SelectedFileCount
-@onready var mirror_directory_checkbox: CheckBox = %MirrorDirectoryCheckbox
+@onready var scenes_mirror_directory_checkbox: CheckBox = %ScenesMirrorDirectoryCheckbox
 @onready var info_dialog_button: Button = %InfoDialogButton
 @onready var info_dialog: AcceptDialog = AcceptDialog.new()
 @onready var reimport_button: Button = %ReimportButton
@@ -51,6 +53,15 @@ var editor_parent : EditorPlugin
 @onready var clear_node_type_button: Button = %ClearNodeTypeButton
 @onready var scenes_inherited_checkbox: CheckBox = %ScenesInheritedCheckbox
 
+@onready var extract_meshes_checkbox: CheckBox = %ExtractMeshesCheckbox
+@onready var extract_meshes_row: VBoxContainer = %ExtractMeshesRow
+@onready var mesh_mirror_directory_checkbox: CheckBox = %MeshMirrorDirectoryCheckbox
+@onready var mesh_export_path_label: TextEdit = %MeshExportPath
+@onready var set_mesh_path_button: Button = %SetMeshPathButton
+@onready var clear_mesh_path_button: Button = %ClearMeshPathButton
+@onready var mesh_file_directory_checkbox: CheckBox = %MeshFileDirectoryCheckbox
+
+
 
 func _ready() -> void:
 	# Buttons ----------------------
@@ -58,10 +69,12 @@ func _ready() -> void:
 	set_mats_button.pressed.connect(_on_set_mats_pressed)
 	select_materials_button.pressed.connect(func(): add_material_dialog.popup_file_dialog())
 	reimport_button.pressed.connect(_on_reimport_pressed)
+	
 	_on_extract_toggled(false)
 	extract_materials_checkbox.toggled.connect(_on_extract_toggled)
 	set_material_path_button.pressed.connect(func(): material_export_path_dialog.popup_file_dialog())
 	clear_materials_path_button.pressed.connect(func(): _mat_export_path_selected(""))
+	
 	_on_inherited_scene_toggled(false)
 	_on_create_colliders_toggled(false)
 	_on_custom_type_toggled(false)
@@ -73,6 +86,12 @@ func _ready() -> void:
 	node_type_button.pressed.connect(func(): EditorInterface.popup_create_dialog(_on_custom_root_type_selected, "Node"))
 	clear_node_type_button.pressed.connect(func(): _on_custom_root_type_selected(""))
 	_on_list_change()
+	
+	_on_mesh_export_toggled(false)
+	extract_meshes_checkbox.toggled.connect(_on_mesh_export_toggled)
+	set_mesh_path_button.pressed.connect(func(): mesh_export_path_dialog.popup_centered())
+	clear_mesh_path_button.pressed.connect(func(): _mesh_export_path_selected(""))
+
 	
 	file_name_regex = RegEx.new()
 	file_name_regex.compile("/([^/.]+.\\w+)$")
@@ -96,6 +115,12 @@ func _ready() -> void:
 	inherited_scene_path_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_DIR
 	inherited_scene_path_dialog.dir_selected.connect(_inherited_scene_path_selected)
 	EditorInterface.get_base_control().add_child(inherited_scene_path_dialog)
+	
+	mesh_export_path_dialog = EditorFileDialog.new()
+	_set_dialog_settings(mesh_export_path_dialog)
+	mesh_export_path_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_DIR
+	mesh_export_path_dialog.dir_selected.connect(_mesh_export_path_selected)
+	EditorInterface.get_base_control().add_child(mesh_export_path_dialog)
 	
 	# Info dialog
 	info_dialog.title = "Dragon1Freak's BMM Info"
@@ -151,14 +176,20 @@ func _on_set_mats_pressed() -> void:
 			"extract_materials": extract_materials_checkbox.button_pressed,
 			"material_export_path": material_export_path,
 			"create_inherited_scenes": create_scenes_checkbox.button_pressed,
+			"extract_meshes": extract_meshes_checkbox.button_pressed,
 			"inherited_scene_options": {
 				"inherited_scene_path": inherited_scene_path,
 				"create_colliders": create_colliders_checkbox.button_pressed,
 				"collider_placement": collider_placement_button.selected,
 				"collider_type": collider_type_button.selected,
-				"mirror_directory": mirror_directory_checkbox.button_pressed,
+				"mirror_directory": scenes_mirror_directory_checkbox.button_pressed,
 				"custom_node_type": custom_node_type_label.text,
 				"scenes_are_inherited": scenes_inherited_checkbox.button_pressed
+			},
+			"extract_mesh_options": {
+				"mesh_export_path": mesh_export_path,
+				"mirror_directory": mesh_mirror_directory_checkbox.button_pressed,
+				"mesh_file_directory": mesh_file_directory_checkbox.button_pressed
 			}
 		})
 	)
@@ -174,7 +205,7 @@ func _on_reimport_pressed() -> void:
 
 func _check_apply_disabled() -> void:
 	var is_disabled : bool = false
-	if selected_materials.size() == 0 and !extract_materials_checkbox.button_pressed and !create_scenes_checkbox.button_pressed:
+	if selected_materials.size() == 0 and !extract_materials_checkbox.button_pressed and !create_scenes_checkbox.button_pressed and !extract_meshes_checkbox.button_pressed:
 		set_mats_button.disabled = true
 		set_mats_button.tooltip_text = "Select one or more materials"
 	elif extract_materials_checkbox.button_pressed and !material_export_path:
@@ -183,6 +214,9 @@ func _check_apply_disabled() -> void:
 	elif create_scenes_checkbox.button_pressed and !inherited_scene_path:
 		set_mats_button.disabled = true
 		set_mats_button.tooltip_text = "Set a path for inherited scene creation"
+	elif extract_meshes_checkbox.button_pressed and !mesh_export_path:
+		set_mats_button.disabled = true
+		set_mats_button.tooltip_text = "Set a path for the extracted meshes"
 	else:
 		set_mats_button.disabled = false
 		set_mats_button.tooltip_text = ""
@@ -268,3 +302,13 @@ func _on_custom_type_toggled(value: bool) -> void:
 	custom_node_type_row.visible = value
 
 #endregion
+
+
+func _on_mesh_export_toggled(value: bool) -> void:
+	extract_meshes_row.visible = value
+	_check_apply_disabled()
+
+func _mesh_export_path_selected(path) -> void:
+	mesh_export_path_label.text = path
+	mesh_export_path = path
+	_check_apply_disabled()
