@@ -290,8 +290,6 @@ func _set_meshes(object: Dictionary, meshes_to_set: Dictionary) -> void:
 
 #endregion
 
-
-
 #region Utils
 # Utils -----
 func _check_file_format(file_path) -> bool:

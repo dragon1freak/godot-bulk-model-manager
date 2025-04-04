@@ -18,7 +18,7 @@ var mesh_export_path : String
 var selected_materials : PackedStringArray = []
 var editor_parent : EditorPlugin
 
-@onready var set_mats_button: Button = %SetMatsButton
+@onready var apply_button: Button = %ApplyButton
 @onready var selected_file_count: TextEdit = %SelectedFileCount
 @onready var scenes_mirror_directory_checkbox: CheckBox = %ScenesMirrorDirectoryCheckbox
 @onready var info_dialog_button: Button = %InfoDialogButton
@@ -66,7 +66,7 @@ var editor_parent : EditorPlugin
 func _ready() -> void:
 	# Buttons ----------------------
 	info_dialog_button.pressed.connect(func(): info_dialog.popup_centered())
-	set_mats_button.pressed.connect(_on_set_mats_pressed)
+	apply_button.pressed.connect(_on_set_mats_pressed)
 	select_materials_button.pressed.connect(func(): add_material_dialog.popup_file_dialog())
 	reimport_button.pressed.connect(_on_reimport_pressed)
 	
@@ -206,20 +206,20 @@ func _on_reimport_pressed() -> void:
 func _check_apply_disabled() -> void:
 	var is_disabled : bool = false
 	if selected_materials.size() == 0 and !extract_materials_checkbox.button_pressed and !create_scenes_checkbox.button_pressed and !extract_meshes_checkbox.button_pressed:
-		set_mats_button.disabled = true
-		set_mats_button.tooltip_text = "Select one or more materials"
+		apply_button.disabled = true
+		apply_button.tooltip_text = "Select one or more materials"
 	elif extract_materials_checkbox.button_pressed and !material_export_path:
-		set_mats_button.disabled = true
-		set_mats_button.tooltip_text = "Set a material extract path"
+		apply_button.disabled = true
+		apply_button.tooltip_text = "Set a material extract path"
 	elif create_scenes_checkbox.button_pressed and !inherited_scene_path:
-		set_mats_button.disabled = true
-		set_mats_button.tooltip_text = "Set a path for inherited scene creation"
+		apply_button.disabled = true
+		apply_button.tooltip_text = "Set a path for inherited scene creation"
 	elif extract_meshes_checkbox.button_pressed and !mesh_export_path:
-		set_mats_button.disabled = true
-		set_mats_button.tooltip_text = "Set a path for the extracted meshes"
+		apply_button.disabled = true
+		apply_button.tooltip_text = "Set a path for the extracted meshes"
 	else:
-		set_mats_button.disabled = false
-		set_mats_button.tooltip_text = ""
+		apply_button.disabled = false
+		apply_button.tooltip_text = ""
 
 
 #region Material Selection
