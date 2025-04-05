@@ -17,17 +17,11 @@ var files_to_reimport = []
 
 @onready var mat_name_regex : RegEx = RegEx.new()
 @onready var model_name_regex : RegEx = RegEx.new()
-@onready var uid_regex : RegEx = RegEx.new()
-@onready var subres_regex = RegEx.new()
-@onready var node_type_regex = RegEx.new()
 
 
 func _ready() -> void:
 	mat_name_regex.compile("/([^/.]+).(?:tres|res)$")
 	model_name_regex.compile("/([^/.]+).(?:gltf|glb|fbx)$")
-	uid_regex.compile("uid=\"(.+)\"")
-	node_type_regex.compile("(nodes/root_type=\".*\")")
-	subres_regex.compile("_subresources=([\\w={}\\n\\s\":/,.]+})")
 	var file = FileAccess.open(INHERITED_SCENE_TEMPLATE_PATH, FileAccess.READ_WRITE)
 	INHERITED_SCENE_TEMPLATE = file.get_as_text()
 	file.close()
@@ -149,15 +143,14 @@ func _create_scene(file_path, options) -> void:
 
 
 func _set_custom_type(file_path, custom_type) -> void:
-	var file = FileAccess.open(file_path + ".import", FileAccess.READ_WRITE)
-	var content = file.get_as_text()
-	var res = node_type_regex.search(content)
-	var node_type_string = res.get_string(1)
+	var config = ConfigFile.new()
+	var err = config.load(file_path + ".import")
+	if err != OK:
+		printerr("Failed to load import file at: " + file_path + ".import" + "\nCustom type wont be set for this file.")
+		return
 	
-	content = content.replace(node_type_string, "nodes/root_type=\"" + custom_type + "\"")
-	
-	file.store_string(content)
-	file.close()
+	config.set_value("params", "nodes/root_type", custom_type)
+	config.save(file_path + ".import")
 
 
 func _handle_scene_settings(new_scene_path, options) -> void:
@@ -209,19 +202,18 @@ func _set_mats(selected_files) -> void:
 
 
 func _set_mats_on_file(file_path) -> void:
-	var file = FileAccess.open(file_path + ".import", FileAccess.READ_WRITE)
-	var content = file.get_as_text()
+	var config = ConfigFile.new()
+	var err = config.load(file_path + ".import")
+	if err != OK:
+		printerr("Failed to load import file at: " + file_path + ".import" + "\nMaterials wont be set for this file.")
+		return
 	
-	var res = subres_regex.search(content)
-	var subres_json_string = res.get_string(1)
-	var subresources_json = JSON.parse_string(subres_json_string)
+	var subresources_json = config.get_value("params", "_subresources")
 	
 	_set_materials(subresources_json)
 	
-	content = content.replace(subres_json_string, JSON.stringify(subresources_json))
-	
-	file.store_string(content)
-	file.close()
+	config.set_value("params", "_subresources", subresources_json)
+	config.save(file_path + ".import")
 
 
 func _set_materials(object: Dictionary) -> void:
@@ -248,12 +240,12 @@ func _extract_mesh_from_file(file_path, options) -> void:
 	var meshes_to_set = {}
 	var base_path = options.mesh_export_path
 	if options.mirror_directory and current_directory_name:
-		DirAccess.make_dir_absolute(base_path + "/" + current_directory_name)
 		base_path = base_path + "/" + current_directory_name
+		DirAccess.make_dir_absolute(base_path)
 	if options.mesh_file_directory:
 		var model_name = _get_model_name(file_path)
-		DirAccess.make_dir_absolute(base_path + "/" + model_name)
 		base_path = base_path + "/" + model_name
+		DirAccess.make_dir_absolute(base_path)
 	
 	for mesh_instance in mesh_children:
 		var mesh : Mesh = mesh_instance.mesh
@@ -265,19 +257,18 @@ func _extract_mesh_from_file(file_path, options) -> void:
 
 
 func _set_meshes_on_file(file_path: String, meshes_to_set: Dictionary) -> void:
-	var file = FileAccess.open(file_path + ".import", FileAccess.READ_WRITE)
-	var content = file.get_as_text()
+	var config = ConfigFile.new()
+	var err = config.load(file_path + ".import")
+	if err != OK:
+		printerr("Failed to load import file at: " + file_path + ".import" + "\nMeshes wont be extracted for this file.")
+		return
 	
-	var res = subres_regex.search(content)
-	var subres_json_string = res.get_string(1)
-	var subresources_json = JSON.parse_string(subres_json_string)
+	var subresources_json = config.get_value("params", "_subresources")
 	
 	_set_meshes(subresources_json, meshes_to_set)
 	
-	content = content.replace(subres_json_string, JSON.stringify(subresources_json))
-	
-	file.store_string(content)
-	file.close()
+	config.set_value("params", "_subresources", subresources_json)
+	config.save(file_path + ".import")
 
 
 func _set_meshes(object: Dictionary, meshes_to_set: Dictionary) -> void:
