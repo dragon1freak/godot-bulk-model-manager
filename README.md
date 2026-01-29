@@ -1,5 +1,8 @@
 # Bulk Model Manager
 
+> [!NOTE]
+> This plugin was designed for Godot 4.4 and 4.5, for Godot 4.6+ I recommend using [Syvies](https://github.com/Syvies)' [Advanced Model Import](https://github.com/Syvies/godot-plugin-advanced-model-import) plugin
+
 A Godot 4.4 plugin for speeding up workflows when using premade assets!
 
 This plugin adds a tab to the top left dock of the inspector called `BMM`. From that tab, you can select materials you want to apply as external, extract materials on the models, or create inherited scenes, in bulk!
